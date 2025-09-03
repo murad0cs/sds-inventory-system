@@ -99,6 +99,10 @@ async def delete_chemical(
         )
     
     await db.execute(
+        delete(InventoryLog).where(InventoryLog.chemical_id == chemical_id)
+    )
+    
+    await db.execute(
         delete(Chemical).where(Chemical.id == chemical_id)
     )
     await db.commit()
@@ -137,7 +141,7 @@ async def read_inventory_logs(
     conn: asyncpg.Connection = Depends(get_asyncpg_connection)
 ):
     query = """
-        SELECT id, chemical_id, action_type, quantity, timestamp
+        SELECT id, chemical_id, action_type::text as action_type, quantity, timestamp
         FROM inventory_logs
         WHERE chemical_id = $1
         ORDER BY timestamp DESC
@@ -155,4 +159,11 @@ async def read_inventory_logs(
                 detail=f"Chemical with id {chemical_id} not found"
             )
     
-    return [dict(row) for row in rows]
+    logs = []
+    for row in rows:
+        log_dict = dict(row)
+        if log_dict.get('action_type'):
+            log_dict['action_type'] = log_dict['action_type'].lower()
+        logs.append(log_dict)
+    
+    return logs

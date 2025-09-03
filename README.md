@@ -418,5 +418,3 @@ docker exec -it sds_inventory_system_db_1 psql -U postgres -d sds_inventory
 ---
 
 **End of Documentation**
-
-*This project was developed as part of the NeoTech Elements Software Engineer Test.*
