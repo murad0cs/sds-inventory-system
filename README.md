@@ -289,11 +289,11 @@ Expected Output:
 ```
 === Testing SDS Chemical Inventory API ===
 1. Creating a new chemical...
-   ✅ Chemical created with ID: 1
+    Chemical created with ID: 1
 2. Getting all chemicals...
-   ✅ Found 1 chemical(s)
+    Found 1 chemical(s)
 3. Getting chemical by ID (using asyncpg)...
-   ✅ Retrieved chemical: Ethanol
+    Retrieved chemical: Ethanol
 [... additional test results ...]
 === All tests completed! ===
 ```
