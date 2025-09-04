@@ -1,114 +1,111 @@
-#!/usr/bin/env python3
 import requests
 import json
 import time
+import random
 
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "http://localhost:8000"
 
 def test_api():
-    print("\n=== Testing SDS Chemical Inventory API ===\n")
+    print("=== Testing SDS Chemical Inventory API ===\n")
     
-    # Test 1: Create a chemical
+    # Generate unique CAS number for testing
+    unique_cas = f"TEST-{int(time.time())}-{random.randint(100,999)}"
+    
+    # Test 1: Create Chemical
     print("1. Creating a new chemical...")
-    chemical_data = {
+    create_data = {
         "name": "Ethanol",
-        "cas_number": "64-17-5",
+        "cas_number": unique_cas,
         "quantity": 500.0,
         "unit": "ml"
     }
-    response = requests.post(f"{BASE_URL}/chemicals/", json=chemical_data)
-    if response.status_code == 200:
-        created_chemical = response.json()
-        chemical_id = created_chemical["id"]
-        print(f"   ✅ Chemical created with ID: {chemical_id}")
-    else:
-        print(f"   ❌ Failed to create chemical: {response.text}")
-        return
+    response = requests.post(f"{BASE_URL}/api/v1/chemicals/", json=create_data)
+    assert response.status_code == 200, f"Create failed: {response.status_code}"
+    chemical = response.json()
+    chemical_id = chemical["id"]
+    print(f"   ✓ Chemical created with ID: {chemical_id}\n")
     
-    # Test 2: Get all chemicals
-    print("\n2. Getting all chemicals...")
-    response = requests.get(f"{BASE_URL}/chemicals/")
-    if response.status_code == 200:
-        chemicals = response.json()
-        print(f"   ✅ Found {len(chemicals)} chemical(s)")
-    else:
-        print(f"   ❌ Failed to get chemicals: {response.text}")
+    # Test 2: Get All Chemicals (with pagination)
+    print("2. Getting all chemicals...")
+    response = requests.get(f"{BASE_URL}/api/v1/chemicals/")
+    assert response.status_code == 200, f"Get all failed: {response.status_code}"
+    data = response.json()
+    print(f"   ✓ Found {data['total_count']} chemical(s)")
+    print(f"   ✓ Page {data['page']} of {data['total_pages']}\n")
     
-    # Test 3: Get specific chemical (using asyncpg)
-    print(f"\n3. Getting chemical by ID (using asyncpg)...")
-    response = requests.get(f"{BASE_URL}/chemicals/{chemical_id}")
-    if response.status_code == 200:
-        print(f"   ✅ Retrieved chemical: {response.json()['name']}")
-    else:
-        print(f"   ❌ Failed to get chemical: {response.text}")
+    # Test 3: Get Chemical by ID (uses asyncpg)
+    print("3. Getting chemical by ID (using asyncpg)...")
+    response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
+    assert response.status_code == 200, f"Get by ID failed: {response.status_code}"
+    chemical = response.json()
+    print(f"   ✓ Retrieved chemical: {chemical['name']}\n")
     
-    # Test 4: Update chemical
-    print(f"\n4. Updating chemical...")
-    update_data = {"quantity": 750.0}
-    response = requests.put(f"{BASE_URL}/chemicals/{chemical_id}", json=update_data)
-    if response.status_code == 200:
-        updated = response.json()
-        print(f"   ✅ Updated quantity to: {updated['quantity']}")
-    else:
-        print(f"   ❌ Failed to update chemical: {response.text}")
-    
-    # Test 5: Create inventory log
-    print(f"\n5. Creating inventory log...")
-    log_data = {
-        "action_type": "add",
-        "quantity": 250.0
-    }
-    response = requests.post(f"{BASE_URL}/chemicals/{chemical_id}/log", json=log_data)
-    if response.status_code == 200:
-        print(f"   ✅ Log entry created")
-    else:
-        print(f"   ❌ Failed to create log: {response.text}")
-    
-    # Test 6: Get inventory logs (using asyncpg)
-    print(f"\n6. Getting inventory logs (using asyncpg)...")
-    response = requests.get(f"{BASE_URL}/chemicals/{chemical_id}/logs")
-    if response.status_code == 200:
-        logs = response.json()
-        print(f"   ✅ Found {len(logs)} log entry(ies)")
-    else:
-        print(f"   ❌ Failed to get logs: {response.text}")
-    
-    # Test 7: Create another chemical
-    print("\n7. Creating another chemical...")
-    chemical_data_2 = {
-        "name": "Acetone",
-        "cas_number": "67-64-1",
-        "quantity": 1000.0,
+    # Test 4: Update Chemical
+    print("4. Updating chemical...")
+    update_data = {
+        "name": "Ethanol (95%)",
+        "quantity": 750.0,
         "unit": "ml"
     }
-    response = requests.post(f"{BASE_URL}/chemicals/", json=chemical_data_2)
-    if response.status_code == 200:
-        print(f"   ✅ Second chemical created")
-    else:
-        print(f"   ❌ Failed to create second chemical: {response.text}")
+    response = requests.put(f"{BASE_URL}/api/v1/chemicals/{chemical_id}", json=update_data)
+    assert response.status_code == 200, f"Update failed: {response.status_code}"
+    updated = response.json()
+    print(f"   ✓ Updated name: {updated['name']}")
+    print(f"   ✓ Updated quantity: {updated['quantity']} {updated['unit']}\n")
     
-    # Test 8: Delete first chemical
-    print(f"\n8. Deleting chemical...")
-    response = requests.delete(f"{BASE_URL}/chemicals/{chemical_id}")
-    if response.status_code == 204:
-        print(f"   ✅ Chemical deleted successfully")
-    else:
-        print(f"   ❌ Failed to delete chemical: {response.text}")
+    # Test 5: Create Inventory Log
+    print("5. Creating inventory log...")
+    log_data = {
+        "action_type": "add",
+        "quantity": 100.0
+    }
+    response = requests.post(f"{BASE_URL}/api/v1/chemicals/{chemical_id}/log", json=log_data)
+    assert response.status_code == 200, f"Create log failed: {response.status_code}"
+    print("   ✓ Inventory log created\n")
     
-    print("\n=== All tests completed! ===\n")
+    # Test 6: Get Inventory Logs (uses asyncpg)
+    print("6. Getting inventory logs (using asyncpg)...")
+    response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}/logs")
+    assert response.status_code == 200, f"Get logs failed: {response.status_code}"
+    data = response.json()
+    print(f"   ✓ Found {data["total_count"]} log(s)\n")
+    
+    # Test 7: Test 404 Error
+    print("7. Testing error handling (404)...")
+    response = requests.get(f"{BASE_URL}/api/v1/chemicals/99999")
+    assert response.status_code == 404, f"Expected 404, got: {response.status_code}"
+    print("   ✓ 404 error handled correctly\n")
+    
+    # Test 8: Delete Chemical
+    print("8. Deleting chemical...")
+    response = requests.delete(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
+    assert response.status_code == 204, f"Delete failed: {response.status_code}"
+    print("   ✓ Chemical deleted\n")
+    
+    # Test 9: Verify Deletion
+    print("9. Verifying deletion...")
+    response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
+    assert response.status_code == 404, f"Expected 404 after deletion, got: {response.status_code}"
+    print("   ✓ Deletion confirmed\n")
+    
+    print("=== All tests passed! ✅ ===")
 
 if __name__ == "__main__":
-    # Wait a moment for the API to be ready
-    max_attempts = 10
-    for i in range(max_attempts):
-        try:
-            response = requests.get("http://localhost:8000/health")
-            if response.status_code == 200:
-                test_api()
-                break
-        except:
-            if i == max_attempts - 1:
-                print("API is not available. Please ensure it's running.")
-            else:
-                print(f"Waiting for API to be ready... ({i+1}/{max_attempts})")
-                time.sleep(2)
+    try:
+        # Check if API is running
+        response = requests.get(f"{BASE_URL}/health")
+        if response.status_code != 200:
+            print("❌ Error: API is not running. Please start it with: ./run.sh")
+            exit(1)
+        
+        test_api()
+    except requests.exceptions.ConnectionError:
+        print("❌ Error: Cannot connect to API at http://localhost:8000")
+        print("   Please ensure the API is running with: ./run.sh")
+        exit(1)
+    except AssertionError as e:
+        print(f"\n❌ Test failed: {e}")
+        exit(1)
+    except Exception as e:
+        print(f"\n❌ Unexpected error: {e}")
+        exit(1)

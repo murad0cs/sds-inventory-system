@@ -386,6 +386,12 @@ docker-compose logs -f
 # Stop application
 docker-compose down
 
+# Restart application
+docker-compose restart
+
+# Stop and restart with fresh containers
+docker-compose down && docker-compose up -d
+
 # Reset database
 docker-compose down -v
 
