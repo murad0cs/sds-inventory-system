@@ -15,7 +15,7 @@ class InventoryLog(Base):
     __tablename__ = "inventory_logs"
     
     id = Column(Integer, primary_key=True, index=True)
-    chemical_id = Column(Integer, ForeignKey("chemicals.id"), nullable=False)
+    chemical_id = Column(Integer, ForeignKey("chemicals.id"), nullable=False, index=True)
     action_type = Column(Enum(ActionType), nullable=False)
     quantity = Column(Float, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
