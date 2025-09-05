@@ -23,22 +23,22 @@ def test_api():
     assert response.status_code == 200, f"Create failed: {response.status_code}"
     chemical = response.json()
     chemical_id = chemical["id"]
-    print(f"   ✓ Chemical created with ID: {chemical_id}\n")
+    print(f"   OK: Chemical created with ID: {chemical_id}\n")
     
     # Test 2: Get All Chemicals (with pagination)
     print("2. Getting all chemicals...")
     response = requests.get(f"{BASE_URL}/api/v1/chemicals/")
     assert response.status_code == 200, f"Get all failed: {response.status_code}"
     data = response.json()
-    print(f"   ✓ Found {data['total_count']} chemical(s)")
-    print(f"   ✓ Page {data['page']} of {data['total_pages']}\n")
+    print(f"   OK: Found {data['total_count']} chemical(s)")
+    print(f"   OK: Page {data['page']} of {data['total_pages']}\n")
     
     # Test 3: Get Chemical by ID (uses asyncpg)
     print("3. Getting chemical by ID (using asyncpg)...")
     response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
     assert response.status_code == 200, f"Get by ID failed: {response.status_code}"
     chemical = response.json()
-    print(f"   ✓ Retrieved chemical: {chemical['name']}\n")
+    print(f"   OK: Retrieved chemical: {chemical['name']}\n")
     
     # Test 4: Update Chemical
     print("4. Updating chemical...")
@@ -50,8 +50,8 @@ def test_api():
     response = requests.put(f"{BASE_URL}/api/v1/chemicals/{chemical_id}", json=update_data)
     assert response.status_code == 200, f"Update failed: {response.status_code}"
     updated = response.json()
-    print(f"   ✓ Updated name: {updated['name']}")
-    print(f"   ✓ Updated quantity: {updated['quantity']} {updated['unit']}\n")
+    print(f"   OK: Updated name: {updated['name']}")
+    print(f"   OK: Updated quantity: {updated['quantity']} {updated['unit']}\n")
     
     # Test 5: Create Inventory Log
     print("5. Creating inventory log...")
@@ -61,51 +61,51 @@ def test_api():
     }
     response = requests.post(f"{BASE_URL}/api/v1/chemicals/{chemical_id}/log", json=log_data)
     assert response.status_code == 200, f"Create log failed: {response.status_code}"
-    print("   ✓ Inventory log created\n")
+    print("   OK: Inventory log created\n")
     
     # Test 6: Get Inventory Logs (uses asyncpg)
     print("6. Getting inventory logs (using asyncpg)...")
     response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}/logs")
     assert response.status_code == 200, f"Get logs failed: {response.status_code}"
     data = response.json()
-    print(f"   ✓ Found {data["total_count"]} log(s)\n")
+    print(f"   OK: Found {data["total_count"]} log(s)\n")
     
     # Test 7: Test 404 Error
     print("7. Testing error handling (404)...")
     response = requests.get(f"{BASE_URL}/api/v1/chemicals/99999")
     assert response.status_code == 404, f"Expected 404, got: {response.status_code}"
-    print("   ✓ 404 error handled correctly\n")
+    print("   OK: 404 error handled correctly\n")
     
     # Test 8: Delete Chemical
     print("8. Deleting chemical...")
     response = requests.delete(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
     assert response.status_code == 204, f"Delete failed: {response.status_code}"
-    print("   ✓ Chemical deleted\n")
+    print("   OK: Chemical deleted\n")
     
     # Test 9: Verify Deletion
     print("9. Verifying deletion...")
     response = requests.get(f"{BASE_URL}/api/v1/chemicals/{chemical_id}")
     assert response.status_code == 404, f"Expected 404 after deletion, got: {response.status_code}"
-    print("   ✓ Deletion confirmed\n")
+    print("   OK: Deletion confirmed\n")
     
-    print("=== All tests passed! ✅ ===")
+    print("=== All tests passed! SUCCESS: ===")
 
 if __name__ == "__main__":
     try:
         # Check if API is running
         response = requests.get(f"{BASE_URL}/health")
         if response.status_code != 200:
-            print("❌ Error: API is not running. Please start it with: ./run.sh")
+            print("ERROR: Error: API is not running. Please start it with: ./run.sh")
             exit(1)
         
         test_api()
     except requests.exceptions.ConnectionError:
-        print("❌ Error: Cannot connect to API at http://localhost:8000")
+        print("ERROR: Error: Cannot connect to API at http://localhost:8000")
         print("   Please ensure the API is running with: ./run.sh")
         exit(1)
     except AssertionError as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\nERROR: Test failed: {e}")
         exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\nERROR: Unexpected error: {e}")
         exit(1)

@@ -19,8 +19,8 @@ while [ $attempt -lt $max_attempts ]; do
     if curl -s http://localhost:8000/health > /dev/null 2>&1; then
         echo ""
         echo "==========================================="
-        echo "✅ API is ready and available at http://localhost:8000"
-        echo "📚 API Documentation: http://localhost:8000/docs"
+        echo "SUCCESS: API is ready and available at http://localhost:8000"
+        echo "API Documentation: http://localhost:8000/docs"
         echo "==========================================="
         echo ""
         echo "To view logs: docker compose logs -f"
@@ -34,5 +34,5 @@ while [ $attempt -lt $max_attempts ]; do
 done
 
 echo ""
-echo "❌ API failed to start. Check logs with: docker compose logs"
+echo "ERROR: API failed to start. Check logs with: docker compose logs"
 exit 1
